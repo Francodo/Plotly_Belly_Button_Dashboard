@@ -3,12 +3,15 @@ function init() {
 
   d3.json("samples.json").then((data) => {          // Used to read data from sample.json data file. The arbitrary argument name is "data"
     console.log(data);
-    var sampleNames = data.names;
+    var sampleNames = data.names;               // Define a variable sampleNames for data.names
     sampleNames.forEach((sample) => {
       selector
         .append("option")
         .text(sample)
         .property("value", sample);
+        buildMetadata(sampleNames[0]);  // Call buildMetadata function to hover at startup
+        buildCharts(sampleNames[0]);    // Call buildCharts function to hover at startup
+
     });
 })}
 
@@ -22,9 +25,11 @@ init();
       var PANEL = d3.select("#sample-metadata");
   
       PANEL.html("");                               // Clear the panel for any existing data
-   
+     
+
     Object.entries(result).forEach(([key, value]) => {      // Populate the demographic information panel all data parameters available i.e Key : Value
         PANEL.append("h6").text(`${key.toUpperCase()}: ${value}`);
+      
       });
      
     });
@@ -65,14 +70,16 @@ function buildCharts(sample) {
   // Render the plot to the div tag with id "plot"
   Plotly.newPlot("bar", data, layout);
 
-  // Define a variable Trace1 for the sliced data in Bubble plot
+  // Define a variable Trace1 for the data in Bubble plot
   var bubble1 = {
-    x: result.sample_values.slice(0,10),
-    y: result.otu_ids.slice(0,10).map(otu_ID => `OTU ${otu_ID}`),
-    text: result.otu_labels.slice(0,10),
+    x: result.otu_ids,
+    y: result.sample_values,
+    text: result.otu_labels,
     mode:'markers',
-    marker:{
-        size:[25, 50, 100, 150, 200]
+    marker: {
+        size: result.sample_values,
+        color:  result.otu_ids,
+        colorscale: "Jet"
     }
    };
  
@@ -81,10 +88,7 @@ var data = [bubble1];
   
 // Apply the group bubble mode to the layout
 var layout = {
-    title: "Top 10 bacterial species OTUs",
-    x: result.sample_values.slice(0,10),
-    y: result.otu_ids.slice(0,10).map(otu_ID => `OTU ${otu_ID}`),
-    text: result.otu_labels.slice(0,10),
+    title: "Bacterial species OTUs",
     name: "OTUs",
     type: "bubble"
     
@@ -127,12 +131,8 @@ var layout = {
   
   var layout = { width: 600, height: 450, margin: { t: 0, b: 0 } };
 
-
   Plotly.newPlot('gauge', data, layout);
-  
-
-
-   
+     
 });
 
   }
